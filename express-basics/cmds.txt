@@ -1,0 +1,4 @@
+1. npm init - package.json
+2. npm i express@4
+3. app.js -->recommended to use this file for express config
+4. postman - to check our api
