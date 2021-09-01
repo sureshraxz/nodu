@@ -17,6 +17,9 @@ app.get('/', (req,res) => {
 app.post('/', (req,res) =>{
     res.json({message:'Hello from post method',method:'post'})
 })
+//.json - express automatically sets our content type - application/json
+// we dont need to set content type manually as in node
+
 
 /*
 Notes:
