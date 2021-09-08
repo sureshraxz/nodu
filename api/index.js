@@ -14,12 +14,14 @@ app.listen(3000, () =>{
     console.log(`App running on port 3000`);
 })
 
-app.get('/', (req,res) => {
-    res.send('connection tested successfully')
-})
+/*----- Refactoring ------------
+    1. keeping all route handler fns together
+    2. keeping all routes together
+*/
 
-// Get all tour details
-app.get('/api/v1/tours', (req, res) => {
+//------ Request Handler fns-----
+
+const getAllTours = (req, res) => {
     res.status(200).json({
         status: 'success',
         results: tours.length,
@@ -27,10 +29,9 @@ app.get('/api/v1/tours', (req, res) => {
             tours
         }
     })
-})
+}
 
-// Get tour details with id - specify & read data from url parameters
-app.get('/api/v1/tours/:id', (req, res) => {
+const getTour = (req, res) => {
     const id = req.params.id * 1;
     if( id > tours.length - 1){
         return res.status(404).json({
@@ -46,10 +47,9 @@ app.get('/api/v1/tours/:id', (req, res) => {
             tour
         } 
     })
-})
+}
 
-//create tour
-app.post('/api/v1/tours', (req,res) => {
+const createTour = (req,res) => {
     /*    req.body - this contains our request 
         inorder to use this data in request we need request handler - middleware - express.json
     */
@@ -66,10 +66,9 @@ app.post('/api/v1/tours', (req,res) => {
             }
         })
     })
-})
+}
 
-//update tour
-app.patch('/api/v1/tours/:id', (req, res) => {
+const updateTour = (req, res) => {
     
     const  id = req.params.id * 1;
 
@@ -86,11 +85,9 @@ app.patch('/api/v1/tours/:id', (req, res) => {
             tour: 'updated successfully'
         }
     })
-})
+}
 
-
-//delete tour
-app.delete('/api/v1/tours/:id', (req, res) => {
+const deleteTour = (req, res) => {
     
     const  id = req.params.id * 1;
 
@@ -105,9 +102,42 @@ app.delete('/api/v1/tours/:id', (req, res) => {
         status:'success',
         data: null
     })
+}
+
+app.get('/', (req,res) => {
+    res.send('connection tested successfully')
 })
 
+//------ Routes together -----
 
+//-- old approach --
+
+// // Get all tour details
+// app.get('/api/v1/tours', getAllTours)
+
+// // Get tour details with id - specify & read data from url parameters
+// app.get('/api/v1/tours/:id', getTour)
+
+// //create tour
+// app.post('/api/v1/tours', createTour)
+
+// //update tour
+// app.patch('/api/v1/tours/:id', updateTour)
+
+// //delete tour
+// app.delete('/api/v1/tours/:id', deleteTour)
+
+// -- new approach --
+
+app.route('/api/v1/tours')
+    .get( getAllTours )
+    .post( createTour )
+
+app.route('/api/v1/tours/:id')
+    .get( getTour )
+    .patch( updateTour )
+    .delete( deleteTour )
+    
 /* Note
 1- we are using request handler
 2- Response formating 
