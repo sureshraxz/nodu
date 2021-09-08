@@ -18,7 +18,7 @@ app.get('/', (req,res) => {
     res.send('connection tested successfully')
 })
 
-// Get tour details
+// Get all tour details
 app.get('/api/v1/tours', (req, res) => {
     res.status(200).json({
         status: 'success',
@@ -26,6 +26,25 @@ app.get('/api/v1/tours', (req, res) => {
         data: {
             tours
         }
+    })
+})
+
+// Get tour details with id - specify & read data from url parameters
+app.get('/api/v1/tours/:id', (req, res) => {
+    const id = req.params.id * 1;
+    if( id > tours.length - 1){
+        return res.status(404).json({
+            status: 'fail',
+            message: 'Invalid ID'
+        });
+    }
+    //if found return particular details
+    tour = tours.find(f => f.id === id)
+    res.status(200).json({
+        status: 'success',
+        data:{
+            tour
+        } 
     })
 })
 
@@ -49,19 +68,76 @@ app.post('/api/v1/tours', (req,res) => {
     })
 })
 
+//update tour
+app.patch('/api/v1/tours/:id', (req, res) => {
+    
+    const  id = req.params.id * 1;
 
+    if( id > tours.length -1){
+        return res.status(404).json({
+            status:'fail',
+            message: 'Invalid ID'
+        })
+    }
+
+    res.status(200).json({
+        status:'success',
+        data:{
+            tour: 'updated successfully'
+        }
+    })
+})
+
+
+//delete tour
+app.delete('/api/v1/tours/:id', (req, res) => {
+    
+    const  id = req.params.id * 1;
+
+    if( id > tours.length -1){
+        return res.status(404).json({
+            status:'fail',
+            message: 'Invalid ID'
+        })
+    }
+
+    res.status(204).json({
+        status:'success',
+        data: null
+    })
+})
 
 
 /* Note
-1. json.parse - convert json to js object
-2. json.stringify - convert js object to json
-
-    - we are using request handler
-    - Response formating 
+1- we are using request handler
+2- Response formating 
         - JSend 
             - send response as json
             - status field : success / failure
             - if its an array need to use - results field: with length of array as value
+3. specify and read url parameters
+    - if we specify n vars then our route should also be equal to n vars
+        - /api/:id/:name (endpoint var)- /api/4/suresh  - success
+        - /api/:id/:name - /api/4   - error (3:32) ---we can use optional param 
+        - /api/:id/:name? - now name param is optional - /api/4 - success
+    
+JS        
+1. json.parse - convert json to js object
+2. json.stringify - convert js object to json 
+3. Object.assign( target, source ) - will add and replace target object with source
+4. convert numbers based string to number 
+    id = '12' -> 12 --> id * 1
+
+fs.readFile... ==> returns array
+req.body ==> depends on user input (if json , txt, formdata)    
+req.params ==> js object - {id :'5'} -> values are string
+
+Status code 
+200 - Ok
+201 - created
+204 - No content
+404 - Not found
+
 */
 
 
