@@ -1,10 +1,14 @@
 const express = require('express');
 const fs = require('fs');
+const { testMiddleware , requestTime , loginMiddleware } = require('./middle-ware')
 
 const app = express();
 
 //middle ware
 app.use(express.json());
+app.use(testMiddleware)
+app.use(requestTime)
+app.use(loginMiddleware)    
 
 //require file
 const tours = JSON.parse( fs.readFileSync(`${__dirname}/dev-data/tours-simple.json`) );
@@ -22,8 +26,10 @@ app.listen(3000, () =>{
 //------ Request Handler fns-----
 
 const getAllTours = (req, res) => {
+    console.log(req.requestTime);
     res.status(200).json({
         status: 'success',
+        requestedAt: req.requestTime,
         results: tours.length,
         data: {
             tours
