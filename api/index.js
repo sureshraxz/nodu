@@ -1,5 +1,6 @@
 const express = require('express');
 const fs = require('fs');
+const morgan = require( 'morgan' );
 const { testMiddleware , requestTime , loginMiddleware } = require('./middle-ware')
 
 const app = express();
@@ -8,7 +9,7 @@ const app = express();
 app.use(express.json());
 app.use(testMiddleware)
 app.use(requestTime)
-app.use(loginMiddleware)    
+app.use(loginMiddleware)   
 
 //require file
 const tours = JSON.parse( fs.readFileSync(`${__dirname}/dev-data/tours-simple.json`) );
@@ -17,12 +18,31 @@ const tours = JSON.parse( fs.readFileSync(`${__dirname}/dev-data/tours-simple.js
 app.listen(3000, () =>{
     console.log(`App running on port 3000`);
 })
+/***********************    Approach 1  ******************************************** */
+//------ Routes together -----
 
+//-- old approach --
+
+// // Get all tour details
+// app.get('/api/v1/tours', getAllTours)
+
+// // Get tour details with id - specify & read data from url parameters
+// app.get('/api/v1/tours/:id', getTour)
+
+// //create tour
+// app.post('/api/v1/tours', createTour)
+
+// //update tour
+// app.patch('/api/v1/tours/:id', updateTour)
+
+// //delete tour
+// app.delete('/api/v1/tours/:id', deleteTour)
+
+/**************************    Approach 2  ************************************************ */
 /*----- Refactoring ------------
     1. keeping all route handler fns together
     2. keeping all routes together
 */
-
 //------ Request Handler fns-----
 
 const getAllTours = (req, res) => {
@@ -59,6 +79,8 @@ const createTour = (req,res) => {
     /*    req.body - this contains our request 
         inorder to use this data in request we need request handler - middleware - express.json
     */
+   console.log(req.params);
+   console.log(req.body);
     const newId = tours[tours.length - 1].id + 1;
     const newTour = Object.assign({ id : newId}, req.body );
 
@@ -110,40 +132,52 @@ const deleteTour = (req, res) => {
     })
 }
 
-app.get('/', (req,res) => {
-    res.send('connection tested successfully')
-})
+// app.get('/', (req,res) => {
+//     res.send('connection tested successfully')
+// })
 
-//------ Routes together -----
 
-//-- old approach --
+// app.route('/api/v1/tours')
+//     .get( getAllTours )
+//     .post( createTour )
 
-// // Get all tour details
-// app.get('/api/v1/tours', getAllTours)
+// app.route('/api/v1/tours/:id')
+//     .get( getTour )
+//     .patch( updateTour )
+//     .delete( deleteTour )
 
-// // Get tour details with id - specify & read data from url parameters
-// app.get('/api/v1/tours/:id', getTour)
+/****************************    Approach 3  ********************************************** */
+//--------Mounting the routers  ---------  
 
-// //create tour
-// app.post('/api/v1/tours', createTour)
+//1. creating tourRouter - similar to normal router 
+// - useful when we need further divide the main app into sub apps based on resource (eg: tour , user ,...)
+// i.e - 1 router per resource
 
-// //update tour
-// app.patch('/api/v1/tours/:id', updateTour)
+const tourRouter = express.Router();    //router for a sub application
 
-// //delete tour
-// app.delete('/api/v1/tours/:id', deleteTour)
-
-// -- new approach --
-
-app.route('/api/v1/tours')
+tourRouter
+    .route('/')
     .get( getAllTours )
-    .post( createTour )
+    .post( createTour  )
 
-app.route('/api/v1/tours/:id')
+tourRouter
+    .route('/:id')
     .get( getTour )
     .patch( updateTour )
     .delete( deleteTour )
-    
+
+//2. mapping route url to middleware router - mounting 
+//whenerver request hits this url - '/api/v1/tours' - redirected to tourRouter middleware
+// then this middleware  - will search in its routes section 
+// based on the route found - respective route handler fn is implemented - reponse is sent 
+
+app.use('/api/v1/tours', tourRouter);       //connecting the router to our main app
+
+
+/************************************************************************** */
+
+
+
 /* Note
 1- we are using request handler
 2- Response formating 
